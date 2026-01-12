@@ -1,0 +1,86 @@
+name: Publish
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # Every hour - auto update
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (leave empty for auto patch bump)'
+        required: false
+        type: string
+
+env:
+  ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      # Auto-update path (cron or manual without version)
+      - name: Check for updates
+        id: update
+        if: inputs.version == ''
+        run: uv run scripts/update.py
+
+      # Manual release path (with version input)
+      - name: Manual release setup
+        id: manual
+        if: inputs.version != ''
+        run: |
+          curl -sL https://models.dev/api.json | gzip > src/models_dev/data.json.gz
+          sed -i "s/^version = .*/version = \"${{ inputs.version }}\"/" pyproject.toml
+          echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
+          echo "changed=true" >> $GITHUB_OUTPUT
+          echo "commit_message=chore: release v${{ inputs.version }}" >> $GITHUB_OUTPUT
+
+      - name: Set outputs
+        id: config
+        run: |
+          if [ -n "${{ inputs.version }}" ]; then
+            echo "changed=${{ steps.manual.outputs.changed }}" >> $GITHUB_OUTPUT
+            echo "version=${{ steps.manual.outputs.version }}" >> $GITHUB_OUTPUT
+            echo "commit_message=${{ steps.manual.outputs.commit_message }}" >> $GITHUB_OUTPUT
+          else
+            echo "changed=${{ steps.update.outputs.changed }}" >> $GITHUB_OUTPUT
+            echo "version=${{ steps.update.outputs.version }}" >> $GITHUB_OUTPUT
+            echo "commit_message=${{ steps.update.outputs.commit_message }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run tests
+        if: steps.config.outputs.changed == 'true'
+        run: |
+          uv sync --group dev
+          uv run pytest tests/ -v
+
+      - name: Lint and type check
+        if: steps.config.outputs.changed == 'true'
+        run: |
+          uv run ruff check .
+          uv run ty check src tests
+
+      - name: Build package
+        if: steps.config.outputs.changed == 'true'
+        run: uv build
+
+      - name: Publish to PyPI
+        if: steps.config.outputs.changed == 'true'
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+      - name: Commit and tag
+        if: steps.config.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add pyproject.toml src/models_dev/data.json.gz
+          git commit -m "${{ steps.config.outputs.commit_message }}"
+          git tag "v${{ steps.config.outputs.version }}"
+          git push origin main --tags

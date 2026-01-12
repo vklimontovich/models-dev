@@ -1,0 +1,48 @@
+[project]
+name = "models-dev"
+version = "0.1.0"
+description = "Typed Python interface to models.dev API data"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [{ name = "vklmn" }]
+keywords = ["llm", "models", "ai", "openai", "anthropic"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Typing :: Typed",
+]
+
+[project.urls]
+Homepage = "https://github.com/vklmn/models-dev"
+Documentation = "https://models.dev"
+
+[dependency-groups]
+dev = ["ruff", "ty", "pytest"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/models_dev"]
+artifacts = ["src/models_dev/data.json.gz"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "C4", "SIM", "RUF"]
+
+[tool.ty.environment]
+python-version = "3.10"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
