@@ -1,7 +1,7 @@
 """Typed Python interface to models.dev API data.
 
 Example usage:
-    from models_dev import providers, get_provider, get_model
+    from models_dev import providers, get_provider, get_model_by_id
 
     # Iterate all providers
     for provider in providers():
@@ -11,9 +11,12 @@ Example usage:
     openai = get_provider("openai")
     print(openai.name)  # "OpenAI"
 
-    # Get specific model
-    gpt4o = get_model("openai", "gpt-4o")
+    # Get model by ID
+    gpt4o = get_model_by_id("openai", "gpt-4o")
     print(gpt4o.cost.input)  # price per 1M tokens
+
+    # Get model by name
+    gpt4o = openai.get_model_by_name("GPT-4o")
 """
 
 from collections.abc import Iterator
@@ -43,7 +46,8 @@ __all__ = [
     "OutputModality",
     "Provider",
     "Status",
-    "get_model",
+    "get_model_by_id",
+    "get_model_by_name",
     "get_provider",
     "providers",
 ]
@@ -55,31 +59,15 @@ def providers() -> Iterator[Provider]:
 
 
 def get_provider(provider_id: str) -> Provider:
-    """Get a provider by ID.
-
-    Args:
-        provider_id: Provider identifier (e.g., "openai", "anthropic")
-
-    Returns:
-        Provider object
-
-    Raises:
-        KeyError: If provider not found
-    """
+    """Get a provider by ID. Raises KeyError if not found."""
     return _get_providers()[provider_id]
 
 
-def get_model(provider_id: str, model_id: str) -> Model:
-    """Get a model by provider and model ID.
-
-    Args:
-        provider_id: Provider identifier (e.g., "openai")
-        model_id: Model identifier (e.g., "gpt-4o")
-
-    Returns:
-        Model object
-
-    Raises:
-        KeyError: If provider or model not found
-    """
+def get_model_by_id(provider_id: str, model_id: str) -> Model:
+    """Get a model by provider ID and model ID. Raises KeyError if not found."""
     return get_provider(provider_id).models[model_id]
+
+
+def get_model_by_name(provider_id: str, name: str) -> Model:
+    """Get a model by provider ID and model name. Raises KeyError if not found."""
+    return get_provider(provider_id).get_model_by_name(name)

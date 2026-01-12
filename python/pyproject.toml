@@ -1,6 +1,6 @@
 [project]
 name = "models-dev"
-version = "0.1.0"
+version = "1.0.0a1"
 description = "Typed Python interface to models.dev API data"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -20,7 +20,7 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/vklmn/models-dev"
+Homepage = "https://github.com/vklimontovich/models-dev"
 Documentation = "https://models.dev"
 
 [dependency-groups]

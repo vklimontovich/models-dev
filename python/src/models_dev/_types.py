@@ -89,3 +89,14 @@ class Provider:
     doc: str
     models: Mapping[str, Model]
     api: str | None = None
+
+    def get_model_by_id(self, model_id: str) -> Model:
+        """Get model by ID. Raises KeyError if not found."""
+        return self.models[model_id]
+
+    def get_model_by_name(self, name: str) -> Model:
+        """Get model by name. Raises KeyError if not found."""
+        for model in self.models.values():
+            if model.name == name:
+                return model
+        raise KeyError(f"Model with name '{name}' not found")

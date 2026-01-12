@@ -5,6 +5,10 @@ on:
   push:
     branches: [main]
 
+defaults:
+  run:
+    working-directory: python
+
 jobs:
   test:
     runs-on: ubuntu-latest

@@ -1,16 +1,29 @@
 # models-dev
 
-Up-to-date [models.dev](https://models.dev) data as a typed Python package. No HTTP calls needed.
+Up-to-date [models.dev](https://models.dev) data as typed packages. No HTTP calls needed.
 
-Data is refreshed hourly via automated CI.
+Available for **Python** and **Node.js** (coming soon).
 
-## Install
+## About models.dev
+
+[models.dev](https://models.dev) is a community-maintained catalog of LLM models
+([source](https://github.com/anomalyco/models.dev/tree/dev)). It tracks 2000+ models from 75+ providers
+(OpenAI, Anthropic, Google, Mistral, etc.) with metadata like pricing, context limits, modalities,
+and capabilities. The catalog is updated frequently as new models are released.
+
+This package checks for updates hourly and publishes a new version when changes are detected.
+
+---
+
+## Python
+
+### Installation
 
 ```bash
 pip install models-dev
 ```
 
-## Usage
+### Usage
 
 ```python
 from models_dev import providers, get_provider, get_model
@@ -38,3 +51,18 @@ reasoning_models = [
     if m.reasoning
 ]
 ```
+
+---
+
+## Node.js (coming soon)
+
+The Node.js package will be isomorphic - works in both Node.js and browser environments.
+
+```typescript
+import { providers, getProvider, getModel } from 'models-dev';
+
+const openai = getProvider('openai');
+const gpt4o = getModel('openai', 'gpt-4o');
+```
+
+> **Note:** If you're using Vercel AI SDK, use its built-in registry: `import { openai } from '@ai-sdk/openai'`
