@@ -23,13 +23,10 @@ jobs:
 
       - uses: astral-sh/setup-uv@v4
 
-      # Only run update on cron
       - name: Update data
-        if: github.event_name == 'schedule'
         run: uv run scripts/update.py
 
       - name: Push changes
-        if: github.event_name == 'schedule'
         run: git push
 
       - run: uv sync --group dev

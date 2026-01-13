@@ -2,7 +2,7 @@
 
 Up-to-date [models.dev](https://models.dev) data as typed packages. No HTTP calls needed.
 
-Available for **Python** and **Node.js** (coming soon).
+Available for **Python** and **Node.js**.
 
 ## About models.dev
 
@@ -16,6 +16,8 @@ This package checks for updates hourly and publishes a new version when changes 
 ---
 
 ## Python
+
+**Zero runtime dependencies** | **~75 KB** installed
 
 ### Installation
 
@@ -54,15 +56,43 @@ reasoning_models = [
 
 ---
 
-## Node.js (coming soon)
+## Node.js
 
-The Node.js package will be isomorphic - works in both Node.js and browser environments.
+**Zero runtime dependencies** | **~100 KB** bundle | Works in Node.js and browsers
+
+### Installation
+
+```bash
+npm install models-dev
+```
+
+### Usage
 
 ```typescript
-import { providers, getProvider, getModel } from 'models-dev';
+import { providers, getProviderInfo, getModel } from 'models-dev';
 
-const openai = getProvider('openai');
-const gpt4o = getModel('openai', 'gpt-4o');
+// List all providers
+for (const p of await providers()) {
+  console.log(`${p.name}: ${Object.keys(p.models).length} models`);
+}
+
+// Get provider details
+const openai = await getProviderInfo('openai');
+console.log(openai.env);  // ["OPENAI_API_KEY"]
+console.log(openai.doc);  // "https://platform.openai.com/docs/models"
+
+// Get model details
+const gpt4o = await getModel('openai', 'gpt-4o');
+console.log(gpt4o.cost?.input);       // 2.5 (USD per 1M tokens)
+console.log(gpt4o.limit.context);     // 128000
+console.log(gpt4o.modalities.input);  // ["text", "image"]
+console.log(gpt4o.reasoning);         // false
+
+// Filter models
+const all = await providers();
+const reasoningModels = all.flatMap(p =>
+  Object.values(p.models).filter(m => m.reasoning)
+);
 ```
 
 > **Note:** If you're using Vercel AI SDK, use its built-in registry: `import { openai } from '@ai-sdk/openai'`
