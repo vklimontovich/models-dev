@@ -61,7 +61,7 @@ def generate_commit_message(diff: str) -> str:
     prompt = f"{prompt}\n\n{diff[:10000]}"
     resp = client.messages.create(
         model="claude-haiku-4-5",
-        max_tokens=100,
+        max_tokens=1000,
         messages=[{"role": "user", "content": prompt}],
     )
     return resp.content[0].text.strip()
