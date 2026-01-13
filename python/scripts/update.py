@@ -57,7 +57,11 @@ def generate_commit_message(diff: str) -> str:
     import anthropic
 
     client = anthropic.Anthropic(api_key=api_key)
-    prompt = "Generate a commit message for this diff. Use conventional commits. Be concise."
+    prompt = (
+        "Generate a commit message for this diff. Use conventional commits. Be concise. "
+        "NEVER wrap code in ``` etc. Output just commit message. "
+        "ABSOLUTELY no formatting, plain ASCII"
+    )
     prompt = f"{prompt}\n\n{diff[:10000]}"
     resp = client.messages.create(
         model="claude-haiku-4-5",
