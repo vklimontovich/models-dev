@@ -1,5 +1,5 @@
 # /// script
-# dependencies = ["anthropic", "httpx", "gitpython"]
+# dependencies = ["anthropic", "httpx", "gitpython", "models-dev"]
 # ///
 """Update data.json.gz from models.dev.
 
@@ -48,11 +48,14 @@ def compute_diff(old: str, new: str) -> str:
     return "".join(diff)
 
 
-def generate_commit_message(diff: str) -> str:
-    """Generate commit message using Anthropic API."""
+MODEL_ID = "claude-haiku-4-5-20251001"
+
+
+def generate_commit_message(diff: str) -> tuple[str, int, int]:
+    """Generate commit message using Anthropic API. Returns (message, in_tokens, out_tokens)."""
     api_key = os.environ.get("ANTHROPIC_API_KEY")
     if not api_key:
-        return "chore: update models data"
+        return "chore: update models data", 0, 0
 
     import anthropic
 
@@ -64,11 +67,28 @@ def generate_commit_message(diff: str) -> str:
     )
     prompt = f"{prompt}\n\n{diff[:10000]}"
     resp = client.messages.create(
-        model="claude-haiku-4-5",
+        model=MODEL_ID,
         max_tokens=1000,
         messages=[{"role": "user", "content": prompt}],
     )
-    return resp.content[0].text.strip()
+    return resp.content[0].text.strip(), resp.usage.input_tokens, resp.usage.output_tokens
+
+
+def print_token_stats(input_tokens: int, output_tokens: int) -> None:
+    """Print token usage and cost using models-dev pricing."""
+    from models_dev import get_model_by_id
+
+    model = get_model_by_id("anthropic", MODEL_ID)
+    if not model.cost:
+        print(f"Tokens: {input_tokens} in, {output_tokens} out (no pricing data)")
+        return
+
+    input_cost = (input_tokens / 1_000_000) * (model.cost.input or 0)
+    output_cost = (output_tokens / 1_000_000) * (model.cost.output or 0)
+    total_cost = input_cost + output_cost
+
+    print(f"Tokens: {input_tokens} in, {output_tokens} out")
+    print(f"Cost: ${total_cost:.6f} (${model.cost.input}/M in, ${model.cost.output}/M out)")
 
 
 def get_version() -> str:
@@ -95,8 +115,22 @@ def save_data(data_str: str) -> None:
         f.write(json.dumps(json.loads(data_str), separators=(",", ":")))
 
 
+def get_action_url() -> str | None:
+    """Get GitHub Action run URL from environment."""
+    server = os.environ.get("GITHUB_SERVER_URL")
+    repo = os.environ.get("GITHUB_REPOSITORY")
+    run_id = os.environ.get("GITHUB_RUN_ID")
+    if server and repo and run_id:
+        return f"{server}/{repo}/actions/runs/{run_id}"
+    return None
+
+
 def commit(message: str) -> None:
     """Commit changes."""
+    action_url = get_action_url()
+    if action_url:
+        message = f"{message}\n\nAction: {action_url}"
+
     repo = git.Repo(ROOT)
     repo.index.add(["python/pyproject.toml", "python/src/models_dev/data.json.gz"])
     repo.index.commit(message)
@@ -122,8 +156,9 @@ def main() -> int:
     print(diff[:500])
 
     print("Generating commit message...")
-    message = generate_commit_message(diff)
+    message, input_tokens, output_tokens = generate_commit_message(diff)
     print(f"Message: {message}")
+    print_token_stats(input_tokens, output_tokens)
 
     if args.dry_run:
         print("Dry run, stopping")

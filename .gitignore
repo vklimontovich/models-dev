@@ -8,3 +8,4 @@ build/
 .ruff_cache/
 .idea/
 python/.venv/
+.env
