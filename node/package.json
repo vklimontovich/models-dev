@@ -1,6 +1,6 @@
 {
-  "name": "models-dev",
-  "version": "0.1.0",
+  "name": "models-dev-db",
+  "version": "1.0.54",
   "description": "Up-to-date models.dev data as typed packages",
   "author": "Vladimir Klimontovich",
   "homepage": "https://github.com/vklimontovich/models-dev",
@@ -30,7 +30,9 @@
   "scripts": {
     "build": "bun run scripts/build.ts",
     "update": "bun run scripts/update.ts",
-    "test": "bun test"
+    "test": "bun test",
+    "prepublishOnly": "bun run build",
+    "release": "npm publish"
   },
   "keywords": [
     "llm",

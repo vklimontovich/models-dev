@@ -25,7 +25,7 @@ async function build() {
   });
 
   console.log("Generating declarations...");
-  const proc = Bun.spawn(["bunx", "tsc", "--emitDeclarationOnly"], {
+  const proc = Bun.spawn(["bun", "tsc", "--emitDeclarationOnly"], {
     stdout: "inherit",
     stderr: "inherit",
   });

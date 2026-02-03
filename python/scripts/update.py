@@ -23,6 +23,7 @@ DATA_URL = "https://models.dev/api.json"
 ROOT = Path(__file__).parent.parent.parent
 DATA_PATH = ROOT / "python" / "src" / "models_dev" / "data.json.gz"
 PYPROJECT_PATH = ROOT / "python" / "pyproject.toml"
+NODE_PACKAGE_PATH = ROOT / "node" / "package.json"
 
 
 def fetch_latest() -> str:
@@ -98,7 +99,7 @@ def get_version() -> str:
 
 
 def bump_version() -> str:
-    """Bump patch version and return new version."""
+    """Bump patch version in pyproject.toml and package.json. Returns new version."""
     content = PYPROJECT_PATH.read_text()
     old = get_version()
     parts = old.split(".")
@@ -106,6 +107,12 @@ def bump_version() -> str:
     new = ".".join(parts)
     content = re.sub(r'^version = ".+"', f'version = "{new}"', content, flags=re.MULTILINE)
     PYPROJECT_PATH.write_text(content)
+
+    # Update node package.json
+    pkg = json.loads(NODE_PACKAGE_PATH.read_text())
+    pkg["version"] = new
+    NODE_PACKAGE_PATH.write_text(json.dumps(pkg, indent=2) + "\n")
+
     return new
 
 
@@ -132,7 +139,11 @@ def commit(message: str) -> None:
         message = f"{message}\n\nAction: {action_url}"
 
     repo = git.Repo(ROOT)
-    repo.index.add(["python/pyproject.toml", "python/src/models_dev/data.json.gz"])
+    repo.index.add([
+        "python/pyproject.toml",
+        "python/src/models_dev/data.json.gz",
+        "node/package.json",
+    ])
     repo.index.commit(message)
 
 
