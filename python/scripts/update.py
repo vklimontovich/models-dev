@@ -163,6 +163,12 @@ def main() -> int:
         print("No changes")
         return 0
 
+    # Signal to GitHub Actions that changes occurred
+    github_output = os.environ.get("GITHUB_OUTPUT")
+    if github_output:
+        with open(github_output, "a") as f:
+            f.write("changes=true\n")
+
     print(f"Changes detected ({len(diff)} chars)")
     print(diff[:500])
 

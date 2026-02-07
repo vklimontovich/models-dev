@@ -21,52 +21,64 @@ jobs:
       - uses: oven-sh/setup-bun@v2
 
       - name: Update data
+        id: update
         working-directory: python
         run: uv run scripts/update.py
 
       - name: Push changes
+        if: steps.update.outputs.changes == 'true'
         run: git push
 
       # Python
       - name: Python - Install deps
+        if: steps.update.outputs.changes == 'true'
         working-directory: python
         run: uv sync --group dev
 
       - name: Python - Test
+        if: steps.update.outputs.changes == 'true'
         working-directory: python
         run: uv run pytest tests/ -v
 
       - name: Python - Lint
+        if: steps.update.outputs.changes == 'true'
         working-directory: python
         run: uv run ruff check .
 
       - name: Python - Type check
+        if: steps.update.outputs.changes == 'true'
         working-directory: python
         run: uv run ty check src tests
 
       - name: Python - Build
+        if: steps.update.outputs.changes == 'true'
         working-directory: python
         run: uv build
 
       - name: Python - Publish
+        if: steps.update.outputs.changes == 'true'
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: python/dist
 
       # Node
       - uses: actions/setup-node@v4
+        if: steps.update.outputs.changes == 'true'
         with:
           node-version: 20
 
       - name: Node - Install deps
+        if: steps.update.outputs.changes == 'true'
         working-directory: node
         run: bun install
 
       - name: Node - Build
+        if: steps.update.outputs.changes == 'true'
         working-directory: node
         run: bun run build
 
       - name: Node - Publish
+        if: steps.update.outputs.changes == 'true'
         working-directory: node
         run: |
           npm install -g npm@latest
