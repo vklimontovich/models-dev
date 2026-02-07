@@ -63,13 +63,13 @@ reasoning_models = [
 ### Installation
 
 ```bash
-npm install models-dev
+npm install models-dev-db
 ```
 
 ### Usage
 
 ```typescript
-import { providers, getProviderInfo, getModel } from 'models-dev';
+import { providers, getProviderInfo, getModel } from 'models-dev-db';
 
 // List all providers
 for (const p of await providers()) {
