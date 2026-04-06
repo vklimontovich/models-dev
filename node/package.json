@@ -1,6 +1,6 @@
 {
   "name": "models-dev-db",
-  "version": "1.0.237",
+  "version": "1.0.238",
   "description": "Up-to-date models.dev data as typed packages",
   "author": "Vladimir Klimontovich",
   "homepage": "https://github.com/vklimontovich/models-dev",
