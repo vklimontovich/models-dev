@@ -1,6 +1,6 @@
 [project]
 name = "models-dev"
-version = "1.0.613"
+version = "1.0.614"
 description = "Typed Python interface to models.dev API data"
 readme = "README.md"
 requires-python = ">=3.10"
